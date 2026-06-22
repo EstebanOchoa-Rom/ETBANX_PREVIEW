@@ -14,6 +14,10 @@ Etbanx es un sitio personal que funciona como base de conocimiento ("digital gar
 - **Projects** — Proyectos terminados o en desarrollo.
 - **Notes** — Apuntes rápidos, ideas sueltas y borradores.
 
+## 🎥 Demostración
+
+https://github.com/EstebanOchoa-Rom/etbanx/blob/main/docs/1.mp4
+
 ## 🛠️ Stack tecnológico
 
 - [Astro](https://astro.build/) — Framework principal del sitio.
