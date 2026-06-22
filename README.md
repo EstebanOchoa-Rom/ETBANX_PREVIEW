@@ -15,8 +15,11 @@ Etbanx es un sitio personal que funciona como base de conocimiento ("digital gar
 - **Notes** — Apuntes rápidos, ideas sueltas y borradores.
 
 ## 🎥 Demostración
+<h2>🎥 Demostración</h2>
 
-https://github.com/EstebanOchoa-Rom/etbanx/blob/main/docs/1.mp4
+<video width="800" controls>
+  <source src="./docs/1.mp4" type="video/mp4">
+</video>
 
 ## 🛠️ Stack tecnológico
 
