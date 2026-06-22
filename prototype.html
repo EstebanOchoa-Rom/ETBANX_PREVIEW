@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETBANX - Interactive Knowledge Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #00FF00;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Digital Rain Effect */
+        #rain-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* HUD Elements */
+        .hud-top {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            text-shadow: 0 0 10px #00FF00;
+        }
+
+        .hud-box {
+            border: 1px solid #00FF00;
+            padding: 10px 20px;
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        /* Title */
+        .title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px #00FF00;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 60px;
+        }
+
+        /* Neural Network Canvas */
+        #neural-canvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+
+        /* Nodes Info */
+        .nodes-info {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 900px;
+        }
+
+        .node-card {
+            border: 1px solid #00FF00;
+            padding: 15px 25px;
+            background: rgba(0, 255, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .node-card:hover {
+            background: rgba(0, 255, 0, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.4);
+        }
+
+        .node-card.gold {
+            border-color: #FFD700;
+            color: #FFD700;
+        }
+
+        .node-card.gold:hover {
+            background: rgba(255, 215, 0, 0.2);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .node-name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .node-desc {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Scanlines */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .title { font-size: 32px; }
+            .nodes-info { gap: 15px; }
+            .node-card { padding: 10px 15px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Digital Rain Canvas -->
+    <canvas id="rain-canvas"></canvas>
+    
+    <!-- Scanlines Overlay -->
+    <div class="scanlines"></div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- HUD Top -->
+        <div class="hud-top">
+            <div class="hud-box">SYS: ONLINE</div>
+            <div class="hud-box">NET: ETBANX v0.1</div>
+        </div>
+
+        <!-- Title -->
+        <div class="title">ETBANX</div>
+        <div class="subtitle">Interactive Knowledge Platform</div>
+
+        <!-- Neural Network Canvas -->
+        <canvas id="neural-canvas" width="800" height="600"></canvas>
+
+        <!-- Nodes Info -->
+        <div class="nodes-info">
+            <div class="node-card">
+                <div class="node-name">KNOWLEDGE</div>
+                <div class="node-desc">Tutoriales y guías</div>
+            </div>
+            <div class="node-card">
+                <div class="node-name">LABS</div>
+                <div class="node-desc">Experimentos</div>
+            </div>
+            <div class="node-card">
+                <div class="node-name">RESEARCH</div>
+                <div class="node-desc">Investigaciones</div>
+            </div>
+            <div class="node-card">
+                <div class="node-name">PROJECTS</div>
+                <div class="node-desc">Proyectos</div>
+            </div>
+            <div class="node-card gold">
+                <div class="node-name">CREATOR</div>
+                <div class="node-desc">Esteban Romero</div>
+            </div>
+            <div class="node-card gold">
+                <div class="node-name">UPLINK</div>
+                <div class="node-desc">Conectar</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Digital Rain Effect
+        const rainCanvas = document.getElementById('rain-canvas');
+        const rainCtx = rainCanvas.getContext('2d');
+
+        rainCanvas.width = window.innerWidth;
+        rainCanvas.height = window.innerHeight;
+
+        const chars = '01 アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+        const charArray = chars.split('');
+        const fontSize = 14;
+        const columns = rainCanvas.width / fontSize;
+        const drops = [];
+
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.random() * -100;
+        }
+
+        function drawRain() {
+            rainCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            rainCtx.fillRect(0, 0, rainCanvas.width, rainCanvas.height);
+
+            rainCtx.fillStyle = '#00FF00';
+            rainCtx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                rainCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > rainCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawRain, 35);
+
+        // Neural Network Visualization
+        const neuralCanvas = document.getElementById('neural-canvas');
+        const neuralCtx = neuralCanvas.getContext('2d');
+
+        const nodes = [
+            { x: 400, y: 150, label: 'ETBANX', type: 'center' },
+            { x: 250, y: 250, label: 'KNOWLEDGE', type: 'normal' },
+            { x: 550, y: 250, label: 'LABS', type: 'normal' },
+            { x: 200, y: 400, label: 'RESEARCH', type: 'normal' },
+            { x: 600, y: 400, label: 'PROJECTS', type: 'normal' },
+            { x: 300, y: 520, label: 'CREATOR', type: 'gold' },
+            { x: 500, y: 520, label: 'UPLINK', type: 'gold' }
+        ];
+
+        const connections = [
+            [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6],
+            [1, 3], [1, 4], [2, 4], [2, 5], [3, 5], [4, 6], [5, 6]
+        ];
+
+        let particles = [];
+
+        class Particle {
+            constructor(x1, y1, x2, y2) {
+                this.x = x1;
+                this.y = y1;
+                this.x2 = x2;
+                this.y2 = y2;
+                this.progress = 0;
+                this.speed = 0.01 + Math.random() * 0.01;
+            }
+
+            update() {
+                this.progress += this.speed;
+                if (this.progress >= 1) {
+                    this.progress = 0;
+                }
+                this.x = this.x1 + (this.x2 - this.x1) * this.progress;
+                this.y = this.y1 + (this.y2 - this.y1) * this.progress;
+            }
+
+            draw() {
+                neuralCtx.beginPath();
+                neuralCtx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                neuralCtx.fillStyle = this.type === 'gold' ? '#FFD700' : '#00FF00';
+                neuralCtx.fill();
+            }
+        }
+
+        function drawConnections() {
+            connections.forEach(conn => {
+                const node1 = nodes[conn[0]];
+                const node2 = nodes[conn[1]];
+
+                neuralCtx.beginPath();
+                neuralCtx.moveTo(node1.x, node1.y);
+                neuralCtx.lineTo(node2.x, node2.y);
+                neuralCtx.strokeStyle = node1.type === 'gold' || node2.type === 'gold' 
+                    ? 'rgba(255, 215, 0, 0.3)' 
+                    : 'rgba(0, 255, 0, 0.3)';
+                neuralCtx.lineWidth = 2;
+                neuralCtx.stroke();
+
+                // Add particle
+                if (Math.random() < 0.02) {
+                    const p = new Particle(node1.x, node1.y, node2.x, node2.y);
+                    p.x1 = node1.x;
+                    p.y1 = node1.y;
+                    p.type = node1.type === 'gold' ? 'gold' : 'normal';
+                    particles.push(p);
+                }
+            });
+        }
+
+        function drawNodes() {
+            nodes.forEach(node => {
+                // Glow effect
+                const gradient = neuralCtx.createRadialGradient(
+                    node.x, node.y, 0,
+                    node.x, node.y, 50
+                );
+                
+                if (node.type === 'gold') {
+                    gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
+                    gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+                } else if (node.type === 'center') {
+                    gradient.addColorStop(0, 'rgba(0, 255, 0, 1)');
+                    gradient.addColorStop(1, 'rgba(0, 255, 0, 0)');
+                } else {
+                    gradient.addColorStop(0, 'rgba(0, 255, 0, 0.6)');
+                    gradient.addColorStop(1, 'rgba(0, 255, 0, 0)');
+                }
+
+                neuralCtx.beginPath();
+                neuralCtx.arc(node.x, node.y, 50, 0, Math.PI * 2);
+                neuralCtx.fillStyle = gradient;
+                neuralCtx.fill();
+
+                // Node circle
+                neuralCtx.beginPath();
+                neuralCtx.arc(node.x, node.y, 35, 0, Math.PI * 2);
+                neuralCtx.strokeStyle = node.type === 'gold' ? '#FFD700' : '#00FF00';
+                neuralCtx.lineWidth = 3;
+                neuralCtx.stroke();
+
+                // Circuit pattern inside
+                neuralCtx.strokeStyle = node.type === 'gold' 
+                    ? 'rgba(255, 215, 0, 0.5)' 
+                    : 'rgba(0, 255, 0, 0.5)';
+                neuralCtx.lineWidth = 1;
+                
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    neuralCtx.beginPath();
+                    neuralCtx.moveTo(node.x, node.y);
+                    neuralCtx.lineTo(
+                        node.x + Math.cos(angle) * 30,
+                        node.y + Math.sin(angle) * 30
+                    );
+                    neuralCtx.stroke();
+                }
+
+                // Label
+                neuralCtx.fillStyle = node.type === 'gold' ? '#FFD700' : '#00FF00';
+                neuralCtx.font = 'bold 12px Courier New';
+                neuralCtx.textAlign = 'center';
+                neuralCtx.fillText(node.label, node.x, node.y + 4);
+            });
+        }
+
+        function animate() {
+            neuralCtx.clearRect(0, 0, neuralCanvas.width, neuralCanvas.height);
+            
+            drawConnections();
+            
+            // Update and draw particles
+            particles = particles.filter(p => p.progress < 1);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            
+            drawNodes();
+            
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            rainCanvas.width = window.innerWidth;
+            rainCanvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
